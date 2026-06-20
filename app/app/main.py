@@ -15,6 +15,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 
 from .config import settings
 from .database import init_db
@@ -62,7 +63,7 @@ async def healthz():
     try:
         from .database import AsyncSessionLocal
         async with AsyncSessionLocal() as s:
-            await s.execute(__import__("sqlalchemy", fromlist=["text"]).text("SELECT 1"))
+            await s.execute(text("SELECT 1"))
         checks["db"] = "ok"
     except Exception as exc:
         checks["db"] = f"error: {exc}"

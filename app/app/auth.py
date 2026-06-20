@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt as pyjwt
 
 from .config import settings
 
@@ -23,7 +23,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 def create_token(subject: str, role: str, expire_days: int) -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=expire_days)
     payload = {"sub": subject, "role": role, "exp": expire}
-    return jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
+    return pyjwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
 
 
 def create_device_token(serial: str) -> str:
@@ -36,8 +36,8 @@ def create_user_token(email: str) -> str:
 
 def decode_token(token: str) -> dict | None:
     try:
-        return jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
-    except JWTError:
+        return pyjwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
+    except pyjwt.PyJWTError:
         return None
 
 
