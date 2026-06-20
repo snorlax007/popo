@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Firmware — {{ app_name }}{% endblock %}
+{% block heading %}Firmware Management{% endblock %}
+{% block actions %}
+  <a href="/admin/logout" class="btn btn--ghost btn--sm">Sign out</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid--2">
+  <!-- Upload Form -->
+  <div class="card">
+    <div class="card__head"><div class="card__title">Upload Firmware</div></div>
+    <div class="card__body">
+      <form
+        hx-post="/admin/firmware/upload"
+        hx-encoding="multipart/form-data"
+        hx-target="#firmware-tbody"
+        hx-swap="afterbegin"
+        enctype="multipart/form-data">
+        <div class="field">
+          <label>Version (semver)</label>
+          <input type="text" name="version" placeholder="0.4.0" required pattern="^\d+\.\d+\.\d+$">
+        </div>
+        <div class="field">
+          <label>Changelog</label>
+          <textarea name="changelog" rows="3" placeholder="What changed in this release?" style="width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:14px;resize:vertical"></textarea>
+        </div>
+        <div class="field" style="flex-direction:row;align-items:center;gap:.5rem">
+          <input type="checkbox" name="is_stable" id="is_stable" value="true">
+          <label for="is_stable">Mark as stable (devices will OTA check for this)</label>
+        </div>
+        <div class="field">
+          <label>Firmware binary (.bin)</label>
+          <input type="file" name="file" accept=".bin" required>
+        </div>
+        <button class="btn btn--primary" type="submit">Upload</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Upload tips -->
+  <div class="card">
+    <div class="card__head"><div class="card__title">How OTA Works</div></div>
+    <div class="card__body">
+      <ol style="padding-left:1.25rem;color:var(--text-muted);line-height:2">
+        <li>Upload a <code>.bin</code> file and mark it stable</li>
+        <li>Go to a device → push OTA notification via MQTT</li>
+        <li>Device downloads and verifies SHA256</li>
+        <li>Device flashes and reboots on next idle</li>
+      </ol>
+      <p class="muted" style="margin-top:1rem;font-size:13px">
+        Only stable releases are served to devices via <code>GET /api/ota/check</code>.
+        Unstable builds can be tested by direct URL.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Firmware Table -->
+<div class="card mt-3">
+  <div class="card__head"><div class="card__title">Release History</div></div>
+  <table class="table">
+    <thead>
+      <tr><th>Version</th><th>SHA256</th><th>Stable</th><th>Changelog</th><th>Uploaded</th></tr>
+    </thead>
+    <tbody id="firmware-tbody">
+      {% for fw in versions %}
+        {% include "partials/firmware_row.html" %}
+      {% else %}
+      <tr>
+        <td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">
+          No firmware uploaded yet.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

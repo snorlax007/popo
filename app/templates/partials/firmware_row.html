@@ -1,0 +1,13 @@
+<tr>
+  <td><strong>v{{ firmware.version }}</strong></td>
+  <td><code style="font-size:11px">{{ firmware.sha256[:16] }}…</code></td>
+  <td>
+    {% if firmware.is_stable %}
+      <span class="badge badge--success">Stable</span>
+    {% else %}
+      <span class="badge">Draft</span>
+    {% endif %}
+  </td>
+  <td class="muted" style="font-size:12px">{{ firmware.changelog or '—' }}</td>
+  <td class="muted" style="font-size:12px">{{ firmware.uploaded_at }}</td>
+</tr>

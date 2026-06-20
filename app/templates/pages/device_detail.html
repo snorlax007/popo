@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ device.name }} — {{ app_name }}{% endblock %}
+{% block heading %}{{ device.name }}{% endblock %}
+{% block actions %}
+  <a href="/admin/" class="btn btn--ghost btn--sm">← Fleet</a>
+  <a href="/admin/logout" class="btn btn--ghost btn--sm">Sign out</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid--2">
+  <!-- Device Info Card -->
+  <div class="card">
+    <div class="card__head"><div class="card__title">Device Info</div></div>
+    <div class="card__body">
+      <table class="table">
+        <tr><td class="muted">Serial</td><td><code>{{ device.serial }}</code></td></tr>
+        <tr><td class="muted">Name</td><td>{{ device.name }}</td></tr>
+        <tr><td class="muted">Firmware</td><td>
+          {% if update_available %}
+            <span class="badge badge--warning">{{ device.firmware_version or '—' }} → {{ latest_fw.version }}</span>
+          {% else %}
+            <span class="badge badge--success">{{ device.firmware_version or '—' }}</span>
+          {% endif %}
+        </td></tr>
+        <tr><td class="muted">Last seen</td><td>{{ device.last_seen_at or 'Never' }}</td></tr>
+        <tr><td class="muted">Registered</td><td>{{ device.registered_at }}</td></tr>
+        <tr><td class="muted">Timezone</td><td>{{ device.timezone }}</td></tr>
+        <tr><td class="muted">Location</td><td>
+          {% if device.weather_lat %}{{ device.weather_lat }}, {{ device.weather_lon }}{% else %}—{% endif %}
+        </td></tr>
+        <tr><td class="muted">Pairing</td><td>
+          {% if device.user_id %}<span class="badge badge--success">Paired (user #{{ device.user_id }})</span>
+          {% else %}<span class="badge">Unpaired</span>{% endif %}
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- OTA Panel -->
+  <div class="card">
+    <div class="card__head"><div class="card__title">OTA Update</div></div>
+    <div class="card__body">
+      {% if update_available %}
+        <p>Update available: <strong>v{{ latest_fw.version }}</strong></p>
+        {% if latest_fw.changelog %}
+        <pre style="font-size:12px;background:var(--surface-2);padding:.75rem;border-radius:var(--radius-sm);overflow:auto">{{ latest_fw.changelog }}</pre>
+        {% endif %}
+        <button
+          class="btn btn--primary mt-2"
+          hx-post="/admin/ota/push/{{ device.id }}"
+          hx-swap="none">
+          Push OTA to Device
+        </button>
+      {% elif latest_fw %}
+        <p class="muted">Device is on the latest stable firmware (v{{ latest_fw.version }}).</p>
+        <span class="badge badge--success">Up to date</span>
+      {% else %}
+        <p class="muted">No stable firmware uploaded yet. Upload one in <a href="/admin/firmware">Firmware</a>.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Mood Timeline -->
+<div class="card mt-3">
+  <div class="card__head">
+    <div class="card__title">Mood Timeline (last 50 events)</div>
+  </div>
+  <table class="table">
+    <thead>
+      <tr><th>Time</th><th>Mood</th><th>Intent</th><th>Popish cue</th></tr>
+    </thead>
+    <tbody>
+      {% for log in mood_logs %}
+      <tr>
+        <td class="muted" style="font-size:12px;white-space:nowrap">{{ log.logged_at }}</td>
+        <td>
+          <span class="badge" style="background:{{ mood_colors.get(log.mood, '#9CA3AF') }}20;color:{{ mood_colors.get(log.mood, '#9CA3AF') }}">
+            {{ log.mood }}
+          </span>
+        </td>
+        <td class="muted">{{ log.intent or '—' }}</td>
+        <td style="font-style:italic;color:var(--text-muted)">{{ log.popish_cue or '—' }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" style="text-align:center;color:var(--text-muted);padding:2rem">
+          No mood events yet. Device may be offline.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

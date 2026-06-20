@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block heading %}Items{% endblock %}
+{% block actions %}
+  <span class="htmx-indicator"><span class="spinner"></span></span>
+{% endblock %}
+{% block content %}
+  <div class="grid grid--2" style="grid-template-columns: 1fr 320px; align-items:start;">
+    <div class="card">
+      <div class="card__head">
+        <div class="card__title">All items</div>
+        <span class="badge">{{ items|length }} total</span>
+      </div>
+      <table class="table">
+        <thead><tr><th>Name</th><th>Owner</th><th>Status</th><th></th></tr></thead>
+        <tbody id="item-list">
+          {% for item in items %}
+            {% include "partials/item_row.html" %}
+          {% else %}
+            <tr><td colspan="4"><div class="empty"><div class="empty__icon">📭</div>No items yet — add one →</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card__head"><div class="card__title">Add item</div></div>
+      <div class="card__body">
+        <form hx-post="/items" hx-target="#item-list" hx-swap="beforeend" hx-on::after-request="this.reset()">
+          <div class="field">
+            <label for="name">Name</label>
+            <input class="input" id="name" name="name" placeholder="e.g. Customer import" required>
+          </div>
+          <div class="field">
+            <label for="owner">Owner</label>
+            <input class="input" id="owner" name="owner" placeholder="e.g. Dana">
+          </div>
+          <button class="btn btn--primary" type="submit" style="width:100%">
+            Add item <span class="htmx-indicator"><span class="spinner"></span></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

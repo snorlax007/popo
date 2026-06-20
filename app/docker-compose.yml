@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://popo:popo@db:5432/popo
+      REDIS_URL: redis://redis:6379/0
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mqtt:
+        condition: service_started
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: popo
+      POSTGRES_USER: popo
+      POSTGRES_PASSWORD: popo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U popo"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    volumes:
+      - redisdata:/data
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - mqttdata:/mosquitto/data
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  mqttdata:

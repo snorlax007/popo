@@ -1,0 +1,15 @@
+<tr id="item-{{ item.id }}">
+  <td><strong>{{ item.name }}</strong></td>
+  <td class="muted">{{ item.owner }}</td>
+  <td>
+    {% set cls = {'active':'badge--accent','review':'badge--warning','done':'badge--success'}.get(item.status,'') %}
+    <span class="badge {{ cls }}">{{ item.status }}</span>
+  </td>
+  <td style="text-align:right">
+    <button class="btn btn--ghost btn--sm"
+            hx-delete="/items/{{ item.id }}"
+            hx-target="#item-{{ item.id }}"
+            hx-swap="outerHTML"
+            hx-confirm="Remove this item?">Remove</button>
+  </td>
+</tr>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Roadmap — {{ app_name }}{% endblock %}
+{% block heading %}Roadmap{% endblock %}
+{% block actions %}
+  <a href="/admin/logout" class="btn btn--ghost btn--sm">Sign out</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:760px">
+  <div class="card__head">
+    <div class="card__title">What's built and what's coming</div>
+    <span class="badge badge--accent">v0.1</span>
+  </div>
+  <div class="card__body">
+    <p class="muted mb-2">Popo Cloud Backend ships in iterations. Here's the road ahead —
+    updated each release.</p>
+    <div class="grid" style="gap:0">
+      {% for r in roadmap %}
+        {% set meta = {
+          'done':    ('badge--success','✓ Shipped'),
+          'progress':('badge--warning','● In progress'),
+          'planned': ('badge','○ Planned')
+        }.get(r.state, ('badge','○ Planned')) %}
+        <div class="row between" style="padding:14px 0; border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600">{{ r.title }}</div>
+            <div class="faint" style="font-size:12.5px">{{ r.note }}</div>
+          </div>
+          <span class="badge {{ meta[0] }}">{{ meta[1] }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

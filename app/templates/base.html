@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <meta name="description" content="{{ app_tagline }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/js/htmx.min.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__brand">
+        <span class="logo">{{ app_name[:1]|upper }}</span>
+        <span>{{ app_name }}</span>
+      </div>
+      <nav class="sidebar__nav">
+        <div class="sidebar__section">Workspace</div>
+        {% for item in nav %}
+          <a class="nav-item {% if item.key == active %}active{% endif %}" href="{{ item.href }}">
+            <span class="ico">{{ item.icon|safe }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        {% endfor %}
+      </nav>
+      <div class="sidebar__footer">
+        <div class="row between">
+          <span>v0.1 · starter</span>
+          <span class="badge badge--success">healthy</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="row">
+          <button class="btn btn--ghost btn--sm menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          <div class="topbar__title">
+            <span class="crumb">{{ app_name }}</span>
+            <h1>{% block heading %}Dashboard{% endblock %}</h1>
+          </div>
+        </div>
+        <div class="topbar__actions">
+          {% block actions %}{% endblock %}
+        </div>
+      </header>
+      <main class="content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  <div id="toasts"></div>
+  <script>
+    document.body.addEventListener("htmx:afterRequest", (e) => {
+      const msg = e.detail.xhr.getResponseHeader("X-Toast");
+      if (!msg) return;
+      const t = document.createElement("div");
+      t.className = "toast"; t.textContent = msg;
+      document.getElementById("toasts").appendChild(t);
+      setTimeout(() => t.remove(), 3200);
+    });
+  </script>
+</body>
+</html>
